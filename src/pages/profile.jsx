@@ -5,8 +5,8 @@ import { useToast, Avatar, AvatarImage, AvatarFallback, Button } from '@/compone
 // @ts-ignore;
 import { Settings, Bell, Shield, User, LogOut, ChevronRight } from 'lucide-react';
 
-import ProfileCard from '@/components/ProfileCard.jsx';
-import FunctionMenu from '@/components/FunctionMenu.jsx';
+import { ProfileCard } from '@/components/ProfileCard.jsx';
+import { FunctionMenu } from '@/components/FunctionMenu.jsx';
 export default function Profile(props) {
   const {
     toast
