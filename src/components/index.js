@@ -1,4 +1,2 @@
-export * from './AccountInfo.jsx';
-export * from './OrderList.jsx';
-export * from './QuickSettings.jsx';
-export * from './UserCard.jsx';
+export * from './ProfileCard.jsx';
+export * from './FunctionMenu.jsx';

@@ -1,46 +1,43 @@
 // @ts-ignore;
 import React, { useState } from 'react';
 // @ts-ignore;
-import { useToast, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, AvatarImage, Avatar, Button, Input, Textarea, Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui';
+import { useToast, Avatar, AvatarImage, AvatarFallback, Button } from '@/components/ui';
 // @ts-ignore;
-import { Camera, Edit, Settings, Shield, Bell, CreditCard, Calendar, CheckCircle, Package, ArrowRight } from 'lucide-react';
+import { Settings, Bell, Shield, User, LogOut, ChevronRight } from 'lucide-react';
 
-import { useForm } from 'react-hook-form';
-import { UserCard } from '@/components/UserCard';
-import { AccountInfo } from '@/components/AccountInfo';
-import { OrderList } from '@/components/OrderList';
-import { QuickSettings } from '@/components/QuickSettings';
+import ProfileCard from '@/components/ProfileCard.jsx';
+import FunctionMenu from '@/components/FunctionMenu.jsx';
 export default function Profile(props) {
   const {
     toast
   } = useToast();
-  const {
-    currentUser
-  } = props.$w.auth;
-  const {
-    navigateTo
-  } = props.$w.utils;
-  const [editMode, setEditMode] = useState(false);
-  const [pagination, setPagination] = useState(1);
-  const form = useForm({
-    defaultValues: {
-      name: currentUser?.name || '',
-      nickName: currentUser?.nickName || '',
-      bio: '热爱生活，追求卓越'
-    }
-  });
-  const handleSaveProfile = async data => {
+  const currentUser = props.$w.auth.currentUser || {};
+  const navigateTo = props.$w.utils.navigateTo;
+  const handleLogout = async () => {
     try {
       toast({
-        title: '保存成功',
-        description: '您的个人信息已更新',
+        title: '正在退出登录...',
+        description: '请稍候'
+      });
+
+      // 调用云开发退出登录
+      const tcb = await props.$w.cloud.getCloudInstance();
+      await tcb.auth.signOut();
+      toast({
+        title: '退出成功',
+        description: '您已成功退出登录',
         variant: 'default'
       });
-      setEditMode(false);
+
+      // 跳转到登录页面
+      navigateTo({
+        pageId: 'home',
+        params: {}
+      });
     } catch (error) {
       toast({
-        title: '保存失败',
-        description: error.message || '更新个人信息时发生错误',
+        title: '退出失败',
+        description: error.message || '退出登录时发生错误，请重试',
         variant: 'destructive'
       });
     }
@@ -51,93 +48,80 @@ export default function Profile(props) {
       params
     });
   };
-  return <div className="min-h-screen bg-gradient-to-br from-[#E8F5E9] via-[#F0F3F4] to-[#E8F5E9]">
-      {/* 顶部导航栏 */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#2C3E50] shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-[#E8F5E9] font-serif text-2xl tracking-tight">个人中心</h1>
-          </div>
-          <Button onClick={() => handleNavigate('settings')} className="bg-[#3498DB] hover:bg-[#2980B9] text-white border-none">
-            <Settings className="w-4 h-4 mr-2" />
-            设置
-          </Button>
-        </div>
-      </header>
+  return <div className="min-h-screen bg-[#1a1a2e] relative">
+      {/* 背景装饰 */}
+      <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-br from-[#0f3460] to-[#1a1a2e] opacity-60"></div>
+      <div className="absolute top-20 right-10 w-32 h-32 bg-[#e94546] rounded-full opacity-10 blur-50"></div>
+      <div className="absolute top-40 left-20 w-24 h-24 bg-[#0f3460] rounded-full opacity-10 blur-40"></div>
 
-      {/* 主内容区 */}
-      <main className="pt-16 pb-8 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
-          {/* 左侧用户信息区 - 占7列 */}
-          <div className="col-span-7 col-start-2">
-            <UserCard currentUser={currentUser} editMode={editMode} setEditMode={setEditMode} form={form} handleSaveProfile={handleSaveProfile} />
+      {/* 主内容区域 */}
+      <div className="relative grid grid-cols-12 gap-6 px-6 py-12 max-w-7xl mx-auto">
+        {/* 左侧用户信息区域 */}
+        <div className="col-span-7 col-start-2">
+          <ProfileCard currentUser={currentUser} />
 
-            {/* 订单记录 */}
-            <div className="mt-6 bg-white rounded-xl shadow-lg p-6 border-l-4 border-[#3498DB]">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[#2C3E50] font-serif text-xl flex items-center gap-2">
-                  <Package className="w-5 h-5" />
-                  我的订单
-                </h2>
-                <Button onClick={() => handleNavigate('orders', {
-                status: 'all'
-              })} className="text-[#3498DB] hover:text-[#2980B9] border-[#3498DB]">
-                  查看全部
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+          {/* 详细信息卡片 */}
+          <div className="mt-6 bg-[#16213e] rounded-2xl p-6 border border-[#0f3460]">
+            <h3 className="text-[#f1f1f1] text-lg font-semibold mb-4 font-montserrat">
+              账户信息
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-3 border-b border-[#0f3460]/30">
+                <div className="flex items-center gap-3">
+                  <User className="w-5 h-5 text-[#0f3460]" />
+                  <span className="text-[#f1f1f1]/70 font-opensans">用户类型</span>
+                </div>
+                <span className="text-[#f1f1f1] font-semibold font-montserrat">
+                  {currentUser.type || '普通用户'}
+                </span>
               </div>
-              <OrderList pagination={pagination} />
-              <div className="mt-4 flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious onClick={() => {
-                      if (pagination > 1) setPagination(pagination - 1);
-                    }} />
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink onClick={() => {
-                      setPagination(1);
-                    }} className={pagination === 1 ? 'bg-[#3498DB] text-white' : ''}>
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink onClick={() => {
-                      setPagination(2);
-                    }} className={pagination === 2 ? 'bg-[#3498DB] text-white' : ''}>
-                        2
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink onClick={() => {
-                      setPagination(3);
-                    }} className={pagination === 3 ? 'bg-[#3498DB] text-white' : ''}>
-                        3
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationNext onClick={() => {
-                      if (pagination < 10) setPagination(pagination + 1);
-                    }} />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+              <div className="flex items-center justify-between py-3 border-b border-[#0f3460]/30">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-[#0f3460]" />
+                  <span className="text-[#f1f1f1]/70 font-opensans">用户ID</span>
+                </div>
+                <span className="text-[#f1f1f1] font-semibold font-montserrat">
+                  {currentUser.userId || '未登录'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <Bell className="w-5 h-5 text-[#0f3460]" />
+                  <span className="text-[#f1f1f1]/70 font-opensans">昵称</span>
+                </div>
+                <span className="text-[#f1f1f1] font-semibold font-montserrat">
+                  {currentUser.nickName || currentUser.name || '未设置'}
+                </span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* 右侧账户信息和快捷设置 - 占3列 */}
-          <div className="col-span-3">
-            <AccountInfo currentUser={currentUser} />
-            <div className="mt-4">
-              <QuickSettings handleNavigate={handleNavigate} />
-            </div>
+        {/* 右侧功能菜单区域 */}
+        <div className="col-span-5">
+          <FunctionMenu onNavigate={handleNavigate} />
+
+          {/* 退出登录卡片 */}
+          <div className="mt-6 bg-[#16213e] rounded-2xl p-6 border border-[#0f3460]">
+            <Button onClick={handleLogout} className="w-full bg-[#e94546] hover:bg-[#e94546]/90 text-white py-3 rounded-xl font-montserrat font-semibold">
+              <LogOut className="w-5 h-5 mr-2" />
+              退出登录
+            </Button>
+          </div>
+
+          {/* 系统信息卡片 */}
+          <div className="mt-4 bg-[#16213e]/50 rounded-2xl p-4 border border-[#0f3460]/30">
+            <p className="text-[#f1f1f1]/50 text-sm font-opensans text-center">
+              当前时间：{new Date().toLocaleString('zh-CN', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+            </p>
           </div>
         </div>
-      </main>
+      </div>
     </div>;
 }
